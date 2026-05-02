@@ -273,6 +273,9 @@ namespace DSA.Topics
 
             // Return max gain including this node
             return node.val + Math.Max(left, right);
+
+
+
         }
 
         // Zigzag Level Order Traversal
@@ -1125,6 +1128,9 @@ namespace DSA.Topics
             return (root1.val == root2.val) && case1 && case2;
         }
 
+        // Morris Traversal (Inorder and Preorder)
+        // Traversal without recursion or stack, using threaded binary tree concept
+        // Time Complexity: O(n), Space Complexity: O(1)
         public static List<int> MorrisInorderTraversal(TreeNode root)
         {
             var result = new List<int>();
@@ -1184,6 +1190,111 @@ namespace DSA.Topics
             }
 
             return result;
+        }
+        public static List<int> MorrisPreorderTraversal(TreeNode root)
+        {
+            var result = new List<int>();
+
+            // Step 1: Handle empty tree
+            if (root == null)
+            {
+                return result;
+            }
+
+            // Step 2: Traverse the tree
+            while (root != null)
+            {
+                // Case 1: No left subtree
+                if (root.left == null)
+                {
+                    // Visit node directly
+                    result.Add(root.val);
+
+                    // Move to right subtree
+                    root = root.right;
+                }
+                else
+                {
+                    // Step 3: Find inorder predecessor (rightmost node in left subtree)
+                    var leftNode = root.left;
+
+                    while (leftNode.right != null && leftNode.right != root)
+                    {
+                        leftNode = leftNode.right;
+                    }
+
+                    // Case 2: First time visiting this node
+                    if (leftNode.right == null)
+                    {
+                        // Create temporary thread to come back later
+                        // WHY: Avoid using stack/recursion
+                        leftNode.right = root;
+
+                        // Visit current node
+                        result.Add(root.val);
+
+                        // Move to left subtree
+                        root = root.left;
+                    }
+                    else
+                    {
+                        // Case 3: Thread already exists → left subtree fully processed
+
+                        // Remove the thread (restore tree)
+                        leftNode.right = null;
+
+                        // Move to right subtree
+                        root = root.right;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        // Flatten Binary Tree to Linked List
+        // Convert tree to a "linked list" in-place using right pointers
+        // The linked list should follow the same order as a preorder traversal
+        // Time Complexity: O(n), Space Complexity: O(1)
+        // Approach: For each node, find the rightmost node of its left subtree and connect it to the original right subtree. Then move the left subtree to the right and set left to null. Repeat this process for all nodes.
+        // This way, we are effectively "flattening" the tree in-place without using extra space for recursion or a stack.
+        // 
+        public static void Flatten(TreeNode root)
+        {
+
+            // Step 1: Start from root
+            var current = root;
+
+            // Traverse the tree
+            while (current != null)
+            {
+
+                // Case 1: If left subtree exists
+                if (current.left != null)
+                {
+
+                    // Step 2: Find rightmost node of left subtree
+                    // WHY: This is where we will attach the original right subtree
+                    var temp = current.left;
+                    while (temp.right != null)
+                    {
+                        temp = temp.right;
+                    }
+
+                    // Step 3: Attach original right subtree to this rightmost node
+                    temp.right = current.right;
+
+                    // Step 4: Move left subtree to right
+                    // WHY: Flatten requires everything on right side
+                    current.right = current.left;
+
+                    // Step 5: Set left to null (as per problem requirement)
+                    current.left = null;
+                }
+
+                // Step 6: Move to next node (always right now)
+                current = current.right;
+            }
         }
 
     }

@@ -168,5 +168,59 @@ namespace DSA.Topics
             }
             return result;
         }
+
+
+        // Definition for singly-linked list.
+        public static Node MergeKLists(Node[] lists)
+        {
+
+            // Step 1: Handle edge case
+            if (lists.Length == 0)
+            {
+                return null;
+            }
+
+            // Step 2: Create min-heap (priority queue)
+            // WHY: Always extract smallest node among K lists
+            var pq = new PriorityQueue<Node, Node>(
+                Comparer<Node>.Create((a, b) => a.data - b.data)
+            );
+
+            // Step 3: Add head of each list to heap
+            // WHY: These are initial candidates
+            foreach (var node in lists)
+            {
+                if (node != null)
+                {
+                    pq.Enqueue(node, node);
+                }
+            }
+
+            // Step 4: Dummy node to simplify list construction
+            Node dummy = new Node(0);
+            Node tail = dummy;
+
+            // Step 5: Process heap
+            while (pq.Count > 0)
+            {
+
+                // Extract smallest node
+                var tempNode = pq.Dequeue();
+
+                // Add it to result list
+                tail.next = tempNode;
+                tail = tail.next;
+
+                // Step 6: If extracted node has next → add to heap
+                // WHY: Maintain candidates from same list
+                if (tempNode.next != null)
+                {
+                    pq.Enqueue(tempNode.next, tempNode.next);
+                }
+            }
+
+            // Step 7: Return merged list
+            return dummy.next;
+        }
     }
 }

@@ -14,15 +14,15 @@ namespace DSA.Topics
             {
                 return null;
             }
-            if (root.data == val)
+            if (root.val == val)
             {
                 return root;
             }
-            else if (root.data < val)
+            else if (root.val < val)
             {
                 return SearchBST(root.right, val);
             }
-            else if (root.data > val)
+            else if (root.val > val)
             {
                 return SearchBST(root.left, val);
             }
@@ -40,21 +40,21 @@ namespace DSA.Topics
         {
             if (node == null) return;
 
-            if (node.data == key)
+            if (node.val == key)
             {
-                res[0] = node.data; // floor
-                res[1] = node.data; // ceil
+                res[0] = node.val; // floor
+                res[1] = node.val; // ceil
                 return;
             }
 
-            if (key < node.data)
+            if (key < node.val)
             {
-                res[1] = node.data;
+                res[1] = node.val;
                 Helper(node.left, key, res);
             }
             else
             {
-                res[0] = node.data; // possible floor
+                res[0] = node.val; // possible floor
                 Helper(node.right, key, res);
             }
         }
@@ -65,7 +65,7 @@ namespace DSA.Topics
             {
                 return new TreeNode(val);
             }
-            if (root.data < val)
+            if (root.val < val)
             {
                 root.right = InsertIntoBST(root.right, val);
             }
@@ -87,13 +87,13 @@ namespace DSA.Topics
 
             // Step 1: Traverse the BST to find the node
             // WHY: Use BST property to reduce search space (O(log n) avg)
-            if (root.data < key)
+            if (root.val < key)
             {
                 // Key lies in right subtree
                 root.right = DeleteNode(root.right, key);
                 return root; // return updated root
             }
-            else if (root.data > key)
+            else if (root.val > key)
             {
                 // Key lies in left subtree
                 root.left = DeleteNode(root.left, key);
@@ -136,11 +136,11 @@ namespace DSA.Topics
                     }
 
                     // Step 4: Replace current node value with successor value
-                    root.data = temp.data;
+                    root.val = temp.val;
 
                     // Step 5: Delete the duplicate node from right subtree
                     // WHY: We copied its value, now remove original node
-                    root.right = DeleteNode(root.right, temp.data);
+                    root.right = DeleteNode(root.right, temp.val);
 
                     return root;
                 }
@@ -168,7 +168,7 @@ namespace DSA.Topics
                 // WHY:
                 // If current value is greater → we are moving to right subtree
                 // Pop until we find a node smaller than current
-                while (stack.Count > 0 && preorder[i] > stack.Peek().data)
+                while (stack.Count > 0 && preorder[i] > stack.Peek().val)
                 {
                     tempNode = stack.Pop();
                 }
@@ -199,6 +199,78 @@ namespace DSA.Topics
 
             // Step 8: Return constructed BST
             return root;
+        }
+
+        public static int FindPredecessor(TreeNode root, int key)
+        {
+            // Step 1: Initialize answer
+            // WHY: Stores best candidate found so far
+            var predecessor = -1;
+
+            void Helper(TreeNode node, int k)
+            {
+                // Base case: reached null → stop
+                if (node == null) { return; }
+
+                // Case 1: Current node is <= key
+                if (node.val <= k)
+                {
+                    // This node is a valid predecessor candidate
+                    predecessor = node.val;
+
+                    // Try to find a larger valid value in right subtree
+                    // WHY: We want the "largest" ≤ key
+                    Helper(node.right, k);
+                }
+                else
+                {
+                    // Case 2: Current node is greater than key
+                    // Cannot be predecessor → go left for smaller values
+                    Helper(node.left, k);
+                }
+            }
+
+            // Step 2: Start recursion
+            Helper(root, key);
+
+            // Step 3: Return result
+            return predecessor;
+        }
+
+        public static int FindSuccessor(TreeNode root, int key)
+        {
+            // Step 1: Initialize answer
+            // WHY: Stores best candidate found so far
+            var successor = -1;
+
+            void Helper(TreeNode node, int k)
+            {
+                // Base case: reached null → stop
+                if (node == null) { return; }
+
+                // Case 1: Current node is >= key
+                if (node.val >= k)
+                {
+                    // This node is a valid successor candidate
+                    successor = node.val;
+
+                    // Try to find a smaller valid value in left subtree
+                    // WHY: We want the "smallest" ≥ key
+                    Helper(node.left, k);
+                }
+                else
+                {
+                    // Case 2: Current node is less than key
+                    // Cannot be successor → go right for larger values
+                    Helper(node.right, k);
+                }
+            }
+
+            // Step 2: Start recursion
+            Helper(root, key);
+
+            // Step 3: Return result
+            return successor;
         }
     }
 }
