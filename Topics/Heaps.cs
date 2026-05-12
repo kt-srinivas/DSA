@@ -222,5 +222,59 @@ namespace DSA.Topics
             // Step 7: Return merged list
             return dummy.next;
         }
+
+        public static List<int> MaxCombinations(int[] nums1, int[] nums2, int k)
+        {
+            // Step 1: Sort both arrays (ascending)
+            Array.Sort(nums1);
+            Array.Sort(nums2);
+
+            int n = nums1.Length;
+
+            // Step 2: Max heap (priority queue)
+            // Store: (sum, i, j)
+            var maxHeap = new PriorityQueue<(int sum, int i, int j), int>();
+
+            // Step 3: Visited set to avoid duplicate index pairs
+            var visited = new HashSet<(int, int)>();
+
+            // Step 4: Start from largest possible sum
+            int i = n - 1, j = n - 1;
+            maxHeap.Enqueue((nums1[i] + nums2[j], i, j), -(nums1[i] + nums2[j]));
+            visited.Add((i, j));
+
+            var result = new List<int>();
+
+            // Step 5: Extract top k combinations
+            while (k-- > 0 && maxHeap.Count > 0)
+            {
+                var current = maxHeap.Dequeue();
+
+                int sum = current.sum;
+                int x = current.i;
+                int y = current.j;
+
+                result.Add(sum);
+
+                // Step 6: Try (i-1, j)
+                if (x - 1 >= 0 && !visited.Contains((x - 1, y)))
+                {
+                    int newSum = nums1[x - 1] + nums2[y];
+                    maxHeap.Enqueue((newSum, x - 1, y), -newSum);
+                    visited.Add((x - 1, y));
+                }
+
+                // Step 7: Try (i, j-1)
+                if (y - 1 >= 0 && !visited.Contains((x, y - 1)))
+                {
+                    int newSum = nums1[x] + nums2[y - 1];
+                    maxHeap.Enqueue((newSum, x, y - 1), -newSum);
+                    visited.Add((x, y - 1));
+                }
+            }
+
+            return result;
+        }
+
     }
 }

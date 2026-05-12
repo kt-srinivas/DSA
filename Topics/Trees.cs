@@ -1297,5 +1297,66 @@ namespace DSA.Topics
             }
         }
 
+        public static int WidthOfBinaryTree(TreeNode root)
+        {
+
+            // Step 1: Handle empty tree
+            if (root == null)
+            {
+                return 0;
+            }
+
+            int result = 0;
+
+            // Step 2: Queue stores (node, index)
+            Queue<(TreeNode node, long index)> queue = new Queue<(TreeNode, long)>();
+
+            // Start with index 0 (cleaner than 1)
+            queue.Enqueue((root, 0));
+
+            // Step 3: BFS traversal
+            while (queue.Count > 0)
+            {
+
+                int size = queue.Count;
+
+                // Normalize to avoid overflow
+                long minIndex = queue.Peek().index;
+
+                long first = 0, last = 0;
+
+                for (int i = 0; i < size; i++)
+                {
+
+                    var (currNode, currIndex) = queue.Dequeue();
+
+                    // Normalize index
+                    currIndex -= minIndex;
+
+                    // First node of level
+                    if (i == 0) first = currIndex;
+
+                    // Last node of level
+                    if (i == size - 1) last = currIndex;
+
+                    // Step 4: Push children with calculated indices
+                    if (currNode.left != null)
+                    {
+                        queue.Enqueue((currNode.left, 2 * currIndex + 1));
+                    }
+
+                    if (currNode.right != null)
+                    {
+                        queue.Enqueue((currNode.right, 2 * currIndex + 2));
+                    }
+                }
+
+                // Step 5: Update max width
+                result = Math.Max(result, (int)(last - first + 1));
+            }
+
+            return result;
+        }
+
     }
 }
