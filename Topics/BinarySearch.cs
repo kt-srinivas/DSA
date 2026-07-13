@@ -288,8 +288,75 @@ namespace DSA.Topics
 
                 return bouquets;
             }
-        
 
+        // Minimize Maximum Distance Between Gas Stations using Binary Search
+        // Time Complexity  : O(n * log(maxDistance / 1e-6))
+        // Space Complexity : O(1)
+        public static double FindMaxMinDistBetweenGasStations(int[] arr, int k)
+        {
+            // Step 1:
+            // Find the maximum distance between adjacent gas stations
+            int maxDist = 0;
+            for (int i = 0; i < arr.Length - 1; i++)
+            {
+                maxDist = Math.Max(maxDist, arr[i + 1] - arr[i]);
+            }
+
+            // Step 2:
+            // Initialize binary search range
+            double low = 0;
+            double high = maxDist;
+
+            // Step 3:
+            // Perform binary search on the answer space
+            while (high - low > 1e-6)
+            {
+                // Calculate middle distance
+                double mid = low + (high - low) / 2.0;
+
+                // Check if current maximum distance is achievable
+                if (IsPossible(arr, k, mid))
+                {
+                    // Try to minimize the maximum distance further
+                    high = mid;
+                }
+                else
+                {
+                    // Increase allowed maximum distance
+                    low = mid;
+                }
+            }
+
+            // Step 4:
+            // Return minimum possible maximum distance
+            return high;
+        }
+
+        // Checks whether all gaps can be reduced to at most 'maxAllowedDistance'
+        // using at most k additional gas stations
+        public static bool IsPossible(int[] arr, int k, double maxAllowedDistance)
+        {
+            // Store total additional stations required
+            int requiredStations = 0;
+
+            // Traverse all adjacent gas station pairs
+            for (int i = 0; i < arr.Length - 1; i++)
+            {
+                // Calculate distance between current pair of stations
+                double distance = arr[i + 1] - arr[i];
+                int sections = (int)(distance / maxAllowedDistance);
+                if(distance/ maxAllowedDistance == sections) sections--;//if distance is exactly divisible, we need one less station
+                requiredStations += sections;
+                // Early termination if required stations exceed k
+                if (requiredStations > k)
+                {
+                    return false;
+                }
+            }
+
+            // Return whether required stations are within the limit
+            return requiredStations <= k;
+        }
 
 
 

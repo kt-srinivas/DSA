@@ -147,5 +147,61 @@ namespace DSA.Topics
             return [-1];
         }
 
+        public static string MinWindowSubString(string s1, string s2)
+        {
+            int n = s1.Length;
+            int m = s2.Length;
+            int bestMinLength = int.MaxValue;
+            int bestStart = -1;
+            int i = 0;
+            while (i < n)
+            {
+                int j = 0;
+                while (i < n)
+                {
+                    if (s1[i] == s2[j])
+                    {
+                        j++;
+                    }
+                    if(j == m)
+                    {
+                        break;
+                    }
+                    i++;
+                }
+                if (j < m)
+                {
+                    break;
+                }
+                int end = i;
+                j = m - 1;
+                while(i >= 0)
+                {
+                    if (s1[i] == s2[j])
+                    {
+                        j--;
+                    }
+                    if (j < 0)
+                    {
+                        break;
+                    }
+                    i--;
+                }
+                int start = i;
+                int length = end - start + 1;
+                if(length < bestMinLength)
+                {
+                    bestMinLength = length;
+                    if(bestStart == -1 || start < bestStart)
+                    {
+                        bestStart = start;  
+                    }
+                }
+                i = start + 1;
+            }
+
+            return bestStart == -1 ? "" : s1.Substring(bestStart, bestMinLength);
+        }
+
     }
 }

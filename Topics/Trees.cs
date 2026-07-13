@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using DSA.Models;
 
 namespace DSA.Topics
 {
@@ -1353,6 +1355,56 @@ namespace DSA.Topics
 
                 // Step 5: Update max width
                 result = Math.Max(result, (int)(last - first + 1));
+            }
+
+            return result;
+        }
+
+        public static int TimeToBurnTree(TreeNode node, TreeNode start)
+        {
+            var map = new Dictionary<TreeNode, TreeNode>();
+            var queue = new Queue<TreeNode>();
+            queue.Enqueue(node);
+            while(queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (current.left != null)
+                {
+                    map[current.left] = current;
+                    queue.Enqueue(current.left);
+                }
+                if (current.right != null)
+                {
+                    map[current.right] = current;
+                    queue.Enqueue(current.right);
+                }
+            }
+
+            var set = new HashSet<TreeNode>();
+            queue.Enqueue(start);
+            set.Add(start);
+            int result = -1;
+            while (queue.Count > 0)
+            {
+                result++;
+                int size = queue.Count;
+                for (int i = 0; i < size; i++)
+                {
+                    var current = queue.Dequeue();
+                    set.Add(current);
+                    if (current.left != null && !set.Contains(current.left))
+                    {
+                        queue.Enqueue(current.left);
+                    }
+                    if (current.right != null && !set.Contains(current.right))
+                    {
+                        queue.Enqueue(current.right);
+                    }
+                    if (map.ContainsKey(current) && !set.Contains(map[current]))
+                    {
+                        queue.Enqueue(map[current]);
+                    }
+                }
             }
 
             return result;

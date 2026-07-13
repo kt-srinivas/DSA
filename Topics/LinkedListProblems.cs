@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DSA.Models;
 
 namespace DSA.Topics
 {
@@ -321,6 +322,92 @@ namespace DSA.Topics
                 groupPrev = temp2;
             }
             return dummy.next;
+        }
+
+        public static Node FlattenLinkedList(Node head)
+        {
+            if(head == null || head.next == null)
+            {
+                return head;
+            }
+            var mergedHead = FlattenLinkedList(head.next);
+            return MergeTwoSortedLinkedLists(head, mergedHead);
+        }
+        
+        public static Node MergeTwoSortedLinkedLists(Node n1, Node n2)
+        {
+            if(n1 == null)
+            {
+                return n2;
+            }
+            if (n2 == null)
+            {
+                return n1;
+            }
+
+            var dummy = new Node(0);
+            var current = dummy;
+            while(n1 != null && n2 != null)
+            {
+                if(n1.data < n2.data)
+                {
+                    current.child = n1;
+                    n1 = n1.child;
+                }
+                else
+                {
+                    current.child = n2;
+                    n2 = n2.child;
+                }
+                current = current.child;
+            }
+            if(n1 != null)
+            {
+                current.child = n1;
+            }
+            else
+            {
+                current.child = n2;
+            }
+
+            return dummy.child;
+        }
+
+        public static Node CopyRandomList(Node head)
+        {
+            if (head == null)
+            {
+                return null;
+            }
+            Node dummy = new Node(-1);
+            Node curr = dummy;
+            Node temp = head;
+            while (temp != null)
+            {
+                Node n = new Node(temp.data);
+                n.next = temp.next;
+                temp.next = n;
+                temp = temp.next.next;
+            }
+            temp = head;
+            while (temp != null)
+            {
+                if (temp.random != null)
+                {
+                    temp.next.random = temp.random.next;
+                }
+                temp = temp.next.next;
+            }
+            temp = head;
+            while (temp != null)
+            {
+                curr.next = temp.next;
+                curr = curr.next;
+                temp.next = temp.next.next;
+                temp = temp.next;
+            }
+            return dummy.next;
+
         }
     }
 

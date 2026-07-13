@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DSA.Topics
+namespace DSA.Models
 {
     public class TreeNode
     {
@@ -14,9 +14,9 @@ namespace DSA.Topics
 
         public TreeNode(int key)
         {
-            this.val = key;
-            this.left = null;
-            this.right = null;
+            val = key;
+            left = null;
+            right = null;
         }
     }
 }

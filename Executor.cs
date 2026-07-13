@@ -48,7 +48,7 @@ namespace DSA
                         var r4 = HashMaps.LongestSubStringWithAtmostkUniqueChar("aabacbebebe", 3);
                         var r5 = HashMaps.FindNoOfSubArrayWithSumEqualToK([1, 1,2,0,3,-1, 1,4], 4);
                         var r6 = HashMaps.FindMinWindowSubString("ADOBECODEBANC", "ABC");*/
-            var result = Heaps.FindKthSmallestElement([3, 2, 1, 5, 6, 4], 3);
+            var result = DP.TriangleMinPathSumMemoization([[-1], [2, 3], [1, -1, -3]]);
         }
 
 

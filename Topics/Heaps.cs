@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DSA.Models;
 
 namespace DSA.Topics
 {
@@ -25,6 +27,7 @@ namespace DSA.Topics
         public static int FindKthSmallestElement(int[] nums, int k)
         {
             var pq = new PriorityQueue<int, int>(Comparer<int>.Create((a, b) => b.CompareTo(a)));
+            PriorityQueue<(int tId, int index, int uId),int> queue = new PriorityQueue<(int tId, int index, int uId), int >(Comparer<int>.Create((a, b) => b.CompareTo(a)));
             for (int i = 0; i < nums.Length; i++)
             {
                 pq.Enqueue(nums[i], nums[i]);

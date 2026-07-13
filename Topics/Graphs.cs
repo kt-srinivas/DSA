@@ -111,6 +111,56 @@ namespace DSA.Topics
             return result;
         }
 
+        //M Coloring Problem
+        //Time Complexity: O(M^N) where M is the number of colors and N is the number of vertices. In the worst case, we have to try all possible colorings of the graph.
+        //Space Complexity: O(N)+O(V+E) for the recursion stack and the color array and  adjacancyList respectively.
+        public static bool MColoringProblem(int n, int m, int[][] edges)
+        {
+            List<List<int>> adjList = new List<List<int>>();
+            for(int i = 0; i < n; i++)
+            {
+                adjList.Add(new List<int>());
+            }
+            for(int i = 0; i < edges.Length; i++)
+            {
+                adjList[edges[i][0]].Add(edges[i][1]);
+                adjList[edges[i][1]].Add(edges[i][0]);
+            }
+            int[] color = new int[n];
+            bool DFSHelper(int node)
+            {
+                if(node == n)
+                {
+                    return true;
+                }
+                for (int c = 1; c <= m; c++)
+                {
+                    bool canColor = true;
+                    foreach (var neighbour in adjList[node])
+                    {
+                        if (color[neighbour] == c)
+                        {
+                            canColor = false;
+                            break;
+                        }
+                    }
+                    if (canColor)
+                    {
+                        color[node] = c;
+                        if (DFSHelper(node + 1))
+                        {
+                            return true;
+                        }
+                        color[node] = 0;
+                    }
+                }
+                return false;
+            }
+
+            return DFSHelper(0);
+           
+        }
+
         // Leetcode 547. Number of Provinces
         public static int NumberOfProvinces(int[][] graph)
         {
@@ -1004,6 +1054,154 @@ namespace DSA.Topics
             return 0;
         }
 
+        // Leetcode 126. Word Ladder II
+        // BFS + Path Tracking
+        //May get TLE for large inputs due to the nature of the problem and the number of possible paths. The algorithm explores all possible transformations, which can lead to a combinatorial explosion in the number of paths, especially when the word list is large and contains many words that are one letter apart. This can result in a time complexity that is exponential in the worst case, making it challenging to handle larger inputs efficiently.
+        public static IList<IList<string>> FindLadders(string beginWord, string endWord, IList<string> wordList)
+        {
+            var result = new List<IList<string>>();
+            var set = new HashSet<string>(wordList);
+            if (!set.Contains(endWord))
+            {
+                return result;
+            }
+            Queue<List<string>> queue = new Queue<List<string>>();
+            queue.Enqueue(new List<string> { beginWord });
+            List<string> usedInLevel = new List<string>();
+            int level = 1;
+            while (queue.Count > 0)
+            {
+                List<string> path = queue.Dequeue();
+                if (path.Count > level)
+                {
+                    level = path.Count;
+                    foreach (string s in usedInLevel)
+                        set.Remove(s);
+                    usedInLevel.Clear();
+                }
+                string word = path[path.Count - 1];
+                if (word == endWord)
+                {
+                    if (result.Count == 0 ||
+                        result[0].Count == path.Count)
+                    {
+                        result.Add(new List<string>(path));
+                    }
+                }
+                char[] chars = word.ToCharArray();
+                for (int i = 0; i < chars.Length; i++)
+                {
+                    char original = chars[i];
+                    for (char c = 'a'; c <= 'z'; c++)
+                    {
+                        chars[i] = c;
+                        string next = new string(chars);
+                        if (set.Contains(next))
+                        {
+                            var newPath = new List<string>(path);
+                            newPath.Add(next);
+                            queue.Enqueue(newPath);
+                            usedInLevel.Add(next);
+                        }
+                    }
+                    chars[i] = original;
+                }
+            }
+            return result;
+        }
+
+        //WordLadder 2
+        //BFS + BackTracking(DFS)
+        public static IList<IList<string>> FindLaddersOptimised(string beginWord,string endWord,IList<string> wordList)
+        {
+            var result = new List<IList<string>>();
+            var dict = new HashSet<string>(wordList);
+
+            if (!dict.Contains(endWord))
+                return result;
+
+            var parent = new Dictionary<string, List<string>>();
+            var q = new Queue<string>();
+            var dist = new Dictionary<string, int>();
+
+            q.Enqueue(beginWord);
+            dist[beginWord] = 0;
+
+            bool found = false;
+
+            while (q.Count > 0 && !found)
+            {
+                int size = q.Count;
+
+                for (int s = 0; s < size; s++)
+                {
+                    string word = q.Dequeue();
+                    int level = dist[word];
+                    char[] chars = word.ToCharArray();
+
+                    for (int i = 0; i < chars.Length; i++)
+                    {
+                        char original = chars[i];
+
+                        for (char c = 'a'; c <= 'z'; c++)
+                        {
+                            if (c == original)
+                                continue;
+
+                            chars[i] = c;
+                            string next = new string(chars);
+
+                            if (!dict.Contains(next))
+                                continue;
+
+                            if (!dist.ContainsKey(next))
+                            {
+                                dist[next] = level + 1;
+                                q.Enqueue(next);
+                            }
+
+                            if (dist[next] == level + 1)
+                            {
+                                if (!parent.ContainsKey(next))
+                                    parent[next] = new List<string>();
+
+                                parent[next].Add(word);
+                            }
+
+                            if (next == endWord)
+                                found = true;
+                        }
+
+                        chars[i] = original;
+                    }
+                }
+            }
+            if (!dist.ContainsKey(endWord))
+                return result;
+            void Dfs(string word, List<string> path)
+            {
+                path.Add(word);
+
+                if (word == beginWord)
+                {
+                    var temp = new List<string>(path);
+                    temp.Reverse();
+                    result.Add(temp);
+                }
+                else if (parent.ContainsKey(word))
+                {
+                    foreach (var p in parent[word])
+                    {
+                        Dfs(p, path);
+                    }
+                }
+
+                path.RemoveAt(path.Count - 1);
+            }
+            Dfs(endWord, new List<string>());
+            return result;
+        }
+
 
         // Leetcode 785. Is Graph Bipartite?
         public static bool IsBipartiteBFS (int[][] graph)
@@ -1760,6 +1958,53 @@ namespace DSA.Topics
             return result;
         }
 
+        public class DisjointSetUnionBySize
+        {
+            public int[] parent;
+            public int[] size;
+
+            public DisjointSetUnionBySize(int n)
+            {
+                parent = new int[n];
+                size = new int[n];
+
+                for (int i = 0; i < n; i++)
+                {
+                    parent[i] = i;
+                    size[i] = 1;
+                }
+            }
+
+            public int Find(int x)
+            {
+                if (parent[x] != x)
+                {
+                    parent[x] = Find(parent[x]);
+                }
+                return parent[x];
+            }
+
+            public void Union(int x, int y)
+            {
+                int rootX = Find(x);
+                int rootY = Find(y);
+
+                if (rootX != rootY)
+                {
+                    if (size[rootX] < size[rootY])
+                    {
+                        parent[rootX] = rootY;
+                        size[rootY] += size[rootX];
+                    }
+                    else
+                    {
+                        parent[rootY] = rootX;
+                        size[rootX] += size[rootY];
+                    }
+                }
+            }
+        }
+
         public class DisjointSetUnion
         {
             // Stores parent of each node
@@ -2083,6 +2328,566 @@ namespace DSA.Topics
 
             // Return all merged accounts
             return result;
+        }
+
+        // Number of Islands II using Disjoint Set Union (Union Find)
+        // Time Complexity  : O(k * α(n * m)) where k is the number of operations
+        // Space Complexity : O(n * m)
+        public static int[] NumberOfIslands2(int n, int m, int[][] arr)
+        {
+            // Step 1:
+            // Initialize Disjoint Set Union for all cells
+            DisjointSetUnion ds = new DisjointSetUnion(n * m);
+
+            // Step 2:
+            // Track whether a cell has already been converted to land
+            bool[] visited = new bool[n * m];
+
+            // Step 3:
+            // Store island count after each operation
+            int[] result = new int[arr.Length];
+
+            // Step 4:
+            // Store current number of islands
+            int count = 0;
+
+            // Step 5:
+            // Direction arrays for Top, Right, Bottom and Left
+            int[] dx = { -1, 0, 1, 0 };
+            int[] dy = { 0, 1, 0, -1 };
+
+            // Step 6:
+            // Process each land addition operation
+            for (int i = 0; i < arr.Length; i++)
+            {
+                // Get current cell coordinates
+                int x = arr[i][0];
+                int y = arr[i][1];
+
+                // Convert 2D coordinate to 1D index
+                int currentCell = x * m + y;
+
+                // Ignore duplicate land addition
+                if (visited[currentCell])
+                {
+                    result[i] = count;
+                    continue;
+                }
+
+                // Mark current cell as land
+                visited[currentCell] = true;
+
+                // New land forms a new island initially
+                count++;
+
+                // Check all four neighboring cells
+                for (int j = 0; j < 4; j++)
+                {
+                    // Calculate neighbor coordinates
+                    int newX = x + dx[j];
+                    int newY = y + dy[j];
+
+                    // Skip invalid coordinates
+                    if (newX < 0 || newX >= n || newY < 0 || newY >= m)
+                    {
+                        continue;
+                    }
+
+                    // Convert neighbor to 1D index
+                    int neighborCell = newX * m + newY;
+
+                    // Skip if neighbor is still water
+                    if (!visited[neighborCell])
+                    {
+                        continue;
+                    }
+
+                    // Merge two different islands
+                    if (ds.Find(currentCell) != ds.Find(neighborCell))
+                    {
+                        ds.Union(currentCell, neighborCell);
+
+                        // Two islands merged into one
+                        count--;
+                    }
+                }
+
+                // Store island count after current operation
+                result[i] = count;
+            }
+
+            // Step 7:
+            // Return island count after each operation
+            return result;
+        }
+
+        // Making A Large Island using Disjoint Set Union (Union By Size)
+        // Time Complexity  : O(n * m * α(n * m))
+        // Space Complexity : O(n * m)
+        public static int LargestIsland(int[][] grid)
+        {
+            // Step 1:
+            // Store number of rows and columns
+            int n = grid.Length;
+            int m = grid[0].Length;
+
+            // Step 2:
+            // Initialize Disjoint Set Union for all cells
+            DisjointSetUnionBySize ds = new DisjointSetUnionBySize(n * m);
+
+            // Step 3:
+            // Direction arrays for Top, Right, Bottom and Left
+            int[] dx = { -1, 0, 1, 0 };
+            int[] dy = { 0, 1, 0, -1 };
+
+            // Step 4:
+            // Store maximum island size
+            int result = int.MinValue;
+
+            // Step 5:
+            // Merge all adjacent land cells into one connected component
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    // Process only land cells
+                    if (grid[i][j] == 1)
+                    {
+                        // Convert current cell into 1D index
+                        int currentCell = i * m + j;
+
+                        // Check all four neighboring cells
+                        for (int k = 0; k < 4; k++)
+                        {
+                            // Calculate neighbor coordinates
+                            int newX = i + dx[k];
+                            int newY = j + dy[k];
+
+                            // Merge adjacent land cells
+                            if (newX >= 0 && newX < n && newY >= 0 && newY < m && grid[newX][newY] == 1)
+                            {
+                                // Convert neighbor into 1D index
+                                int neighborCell = newX * m + newY;
+
+                                // Merge both islands
+                                ds.Union(currentCell, neighborCell);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Step 6:
+            // Find the size of the largest existing island
+            for (int i = 0; i < n * m; i++)
+            {
+                result = Math.Max(result, ds.size[ds.Find(i)]);
+            }
+
+            // Step 7:
+            // Try converting every water cell into land
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < m; j++)
+                {
+                    // Store unique neighboring island parents
+                    HashSet<int> set = new HashSet<int>();
+
+                    // Process only water cells
+                    if (grid[i][j] == 0)
+                    {
+                        // Check all four neighboring cells
+                        for (int k = 0; k < 4; k++)
+                        {
+                            // Calculate neighbor coordinates
+                            int newX = i + dx[k];
+                            int newY = j + dy[k];
+
+                            // Consider only valid neighboring land cells
+                            if (newX >= 0 && newX < n && newY >= 0 && newY < m && grid[newX][newY] == 1)
+                            {
+                                // Convert neighbor into 1D index
+                                int neighborCell = newX * m + newY;
+
+                                // Store unique parent to avoid counting same island twice
+                                set.Add(ds.Find(neighborCell));
+                            }
+                        }
+                    }
+
+                    // Start with size 1 for the flipped cell
+                    int size = 1;
+
+                    // Add sizes of all unique neighboring islands
+                    foreach (var parent in set)
+                    {
+                        size += ds.size[parent];
+                    }
+
+                    // Update maximum island size
+                    result = Math.Max(result, size);
+                }
+            }
+
+            // Step 8:
+            // Return the largest possible island size
+            return result;
+        }
+
+        public static int SwimInWater(int[][] grid)
+        {
+            int n = grid.Length;
+            int[][] Positions = new int[n * n][];
+            for(int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    Positions[grid[i][j]] = new int[] { i, j };
+                }
+            }
+            int[] dx = new int[] { -1, 0, 1, 0 };
+            int[] dy = new int[] { 0, 1, 0, -1 };
+            bool[,] visted = new bool[n, n];
+            DisjointSetUnion dsu = new DisjointSetUnion(n * n);
+            for(int t = 0; t < n * n; t++)
+            {
+                int x = Positions[t][0];
+                int y = Positions[t][1];
+                visted[x, y] = true;
+                for (int k = 0; k < 4; k++)
+                {
+                    int newX = x + dx[k];
+                    int newY = y + dy[k];
+                    if(newX< 0 || newX >= n || newY < 0 || newY >= n)
+                    {
+                        continue;
+                    }
+                    if (visted[newX, newY])
+                    {
+                        dsu.Union(x * n + y, newX * n + newY);
+                    }
+                }
+                if (dsu.Find(0) == dsu.Find(n * n - 1))
+                {
+                    return t;
+                }
+            }
+            return -1;
+        }
+
+        //Leetcode 953. Verifying an Alien Dictionary
+        //Time Complexity: O(N * M) where N is the number of words and M is the average length of the words. We compare adjacent words to build the graph, which takes O(M) time for each pair of words.
+        //Space Complexity: O(K + E) where K is the number of unique characters in the alien language and E is the number of edges in the graph. We store the graph and indegree information for each character.
+        public static char[] AlienDictionary(string[] words, int n, int k)
+        {
+            List<char>result = new List<char>();
+            Dictionary<char, HashSet<char>> graph = new Dictionary<char, HashSet<char>>();
+            for(int i = 0; i < n - 1; i++)
+            {
+                string s1 = words[i];
+                string s2 = words[i + 1];
+                int j = 0;
+                while (j < s1.Length && j < s2.Length)
+                {
+                    if (s1[j] != s2[j])
+                    {
+                        if (!graph.ContainsKey(s1[j]))
+                            graph[s1[j]] = new HashSet<char>();
+                        graph[s1[j]].Add(s2[j]);
+                        break;
+                    }
+                    j++;
+                }
+                if(j == s2.Length && j < s1.Length)
+                {
+                    // Invalid case: s1 is longer than s2 but s1 is a prefix of s2
+                    return new char[0];
+                }
+            }
+            Dictionary<char, int> indegree = new Dictionary<char, int>();
+            for(int i = 0; i < k; i++)
+            {
+                indegree[(char)('a' + i)] = 0;
+            }
+            foreach(var c in graph.Keys)
+            {
+                foreach (var nei in graph[c])
+                {
+                    indegree[nei]++;
+                }
+            }
+            Queue<char> queue = new Queue<char>();
+            foreach (var c in indegree.Keys)
+            {
+                if (indegree[c] == 0)
+                    queue.Enqueue(c);
+            }
+            int index = 0;
+            while (queue.Count > 0)
+            {
+                char c = queue.Dequeue();
+                result[index++] = c;
+                if (graph.ContainsKey(c))
+                {
+                    foreach (var nei in graph[c])
+                    {
+                        indegree[nei]--;
+                        if (indegree[nei] == 0)
+                            queue.Enqueue(nei);
+                    }
+                }
+            }
+            if(index != k)
+            {
+                return new char[0];
+            }
+            return result.ToArray();
+        }
+
+        // Critical Connections (Bridges) using Tarjan's Algorithm
+        // Time Complexity  : O(V + E)
+        // Space Complexity : O(V + E)
+        public static IList<IList<int>> CriticalConnections(int n, IList<IList<int>> connections)
+        {
+            // Step 1:
+            // Store all bridges
+            List<IList<int>> bridges = new List<IList<int>>();
+
+            // Step 2:
+            // Create adjacency list
+            List<IList<int>> graph = new List<IList<int>>();
+
+            // Step 3:
+            // visited[node] = 1 indicates node has been visited
+            int[] visited = new int[n];
+
+            // Step 4:
+            // tin[node] stores the discovery time of the node
+            int[] tin = new int[n];
+
+            // Step 5:
+            // low[node] stores the lowest discovery time reachable from the node
+            int[] low = new int[n];
+
+            // Step 6:
+            // Initialize adjacency list
+            for (int i = 0; i < n; i++)
+            {
+                graph.Add(new List<int>());
+            }
+
+            // Step 7:
+            // Build the undirected graph
+            foreach (var edge in connections)
+            {
+                graph[edge[0]].Add(edge[1]);
+                graph[edge[1]].Add(edge[0]);
+            }
+
+            // Step 8:
+            // Initialize DFS timer
+            int time = 1;
+
+            // Step 9:
+            // Start DFS from node 0
+            DFS(0, -1, time, graph, visited, tin, low, bridges);
+
+            // Step 10:
+            // Return all bridges
+            return bridges;
+        }
+
+        public static void DFS(int node, int parent, int time, IList<IList<int>> graph, int[] visited, int[] tin, int[] low, IList<IList<int>> bridges)
+        {
+            // Mark current node as visited
+            visited[node] = 1;
+
+            // Store discovery time
+            tin[node] = time;
+
+            // Initially lowest reachable time is its own discovery time
+            low[node] = time;
+
+            // Increment timer for next node
+            time++;
+
+            // Traverse all adjacent nodes
+            foreach (var neighbour in graph[node])
+            {
+                // Skip the edge to parent
+                if (neighbour == parent)
+                {
+                    continue;
+                }
+
+                // Visit unvisited neighbour
+                else if (visited[neighbour] == 0)
+                {
+                    DFS(neighbour, node, time, graph, visited, tin, low, bridges);
+
+                    // Update lowest reachable discovery time
+                    low[node] = Math.Min(low[node], low[neighbour]);
+
+                    // Check whether current edge is a bridge
+                    if (tin[node] < low[neighbour])
+                    {
+                        bridges.Add(new List<int> { node, neighbour });
+                    }
+                }
+
+                // Back edge found
+                else
+                {
+                    // Update lowest reachable discovery time
+                    low[node] = Math.Min(low[node], tin[neighbour]);
+                }
+            }
+        }
+
+        // Articulation Points (Cut Vertices) using Tarjan's Algorithm
+        // Time Complexity  : O(V + E)
+        // Space Complexity : O(V + E)
+        // Articulation Points using Tarjan's Algorithm
+        // Time Complexity  : O(V + E)
+        // Space Complexity : O(V)
+        public static List<int> ArticulationNodes(int n, List<List<int>> graph)
+        {
+            // Step 1:
+            // Store all articulation points
+            List<int> articulationPoints = new List<int>();
+
+            // Step 2:
+            // Track visited nodes
+            int[] visited = new int[n];
+
+            // Step 3:
+            // tin[node] stores discovery time
+            int[] tin = new int[n];
+
+            // Step 4:
+            // low[node] stores lowest discovery time reachable
+            int[] low = new int[n];
+
+            // Step 5:
+            // Initialize DFS timer
+            int timer = 0;
+
+            // Step 6:
+            // Perform DFS for every connected component
+            for (int i = 0; i < n; i++)
+            {
+                if (visited[i] == 0)
+                {
+                    DFSArticulation(i, -1, ref timer, graph, visited, tin, low, articulationPoints);
+                }
+            }
+
+            // Step 7:
+            // Return all articulation points
+            return articulationPoints;
+        }
+
+        public static void DFSArticulation(int node, int parent, ref int timer, List<List<int>> graph, int[] visited, int[] tin, int[] low, List<int> articulationPoints)
+        {
+            // Mark current node as visited
+            visited[node] = 1;
+
+            // Assign discovery time and lowest reachable time
+            tin[node] = low[node] = timer++;
+
+            // Count DFS children of current node
+            int children = 0;
+
+            // Traverse all adjacent nodes
+            foreach (var neighbour in graph[node])
+            {
+                // Skip parent edge
+                if (neighbour == parent)
+                {
+                    continue;
+                }
+
+                // Visit unvisited neighbour
+                if (visited[neighbour] == 0)
+                {
+                    DFSArticulation(neighbour, node, ref timer, graph, visited, tin, low, articulationPoints);
+
+                    // Update lowest reachable discovery time
+                    low[node] = Math.Min(low[node], low[neighbour]);
+
+                    // Increment child count
+                    children++;
+
+                    // Check articulation point condition for non-root node
+                    if (parent != -1 && low[neighbour] >= tin[node])
+                    {
+                        articulationPoints.Add(node);
+                    }
+                }
+                else
+                {
+                    // Update lowest reachable discovery time using back edge
+                    low[node] = Math.Min(low[node], tin[neighbour]);
+                }
+            }
+
+            // Root node is articulation point if it has more than one DFS child
+            if (parent == -1 && children > 1)
+            {
+                articulationPoints.Add(node);
+            }
+        }
+
+
+        public static int KosaRajuAlgorithm(int n, List<List<int>> adjList)
+        {
+            int[] vis = new int[n];
+            Stack<int> st = new Stack<int>();
+            for (int i = 0; i < n; i++)
+            {
+                if (vis[i] == 0)
+                {
+                    DFS1(i, adjList, vis, st);
+                }
+            }
+            List<List<int>> transpose = new List<List<int>>();
+            for (int i = 0; i < n; i++)
+            {
+                transpose.Add(new List<int>());
+            }
+            for (int i = 0; i < n; i++)
+            {
+                vis[i] = 0;
+                foreach (var nei in adjList[i])
+                {
+                    transpose[nei].Add(i);
+                }
+            }
+            int scc = 0;
+            while(st.Count > 0)
+            {
+                int node = st.Pop();
+                if (vis[node] == 0)
+                {
+                    scc++;
+                    DFS1(node, transpose, vis, new Stack<int>());// need to write anothe dfs actuall without stack LOL....
+                }
+            }
+            return scc;
+
+        }
+
+        public static void DFS1(int node, List<List<int>> adjList, int[] vis, Stack<int> st)
+        {
+            vis[node] = 1;
+            foreach (var nei in adjList[node])
+            {
+                if (vis[nei] == 0)
+                {
+                    DFS1(nei, adjList, vis, st);
+                }
+            }
+            st.Push(node);
         }
     }
 }

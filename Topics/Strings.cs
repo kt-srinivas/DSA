@@ -146,6 +146,134 @@ namespace DSA.Topics
             }
             return result;
         }
+
+        public static int GetCharValue(char c)
+        {
+            return c - 'A' + 1;
+        }
         
+        public static int GetHashCodeValueForString(string s)
+        {
+            int m = 1000000007;
+            int p = 31;
+            long hashValue = 0;
+            for(int i = 0; i < s.Length; i++)
+            {
+                hashValue = (hashValue * p + GetCharValue(s[i])) % m;
+            }
+            return (int)hashValue;
+        }
+
+        public static int RabinsKarp(string text, string pattern)
+        {
+            int m = 1000000007;
+            int p = 31;
+            int patternHash = GetHashCodeValueForString(pattern);
+            long textHash = 0;
+            int i = 0, j = 0;
+            while(j<text.Length)
+            {
+                textHash = (textHash * p + GetCharValue(text[j])) % m;
+                if (j - i + 1 == pattern.Length)
+                {
+                    if (textHash == patternHash && text.Substring(i, pattern.Length) == pattern)
+                    {
+                        return i;
+                    }
+                    textHash = (textHash - GetCharValue(text[i]) * Power(p, pattern.Length - 1, m) % m + m) % m;
+                    i++;
+                }
+                j++;
+            }
+            return -1;
+        }
+
+        public static long Power(int x, int y, int m)
+        {
+            long result = 1;
+            long baseValue = x % m;
+            while (y > 0)
+            {
+                if ((y & 1) == 1)
+                {
+                    result = (result * baseValue) % m;
+                }
+                baseValue = (baseValue * baseValue) % m;
+                y >>= 1;
+            }
+            return result;
+        }
+
+        static int KMPSearch(string text, string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                return 0;
+
+            int[] lps = BuildLps(pattern);
+
+            int i = 0; // text index
+            int j = 0; // pattern index
+
+            while (i < text.Length)
+            {
+                if (text[i] == pattern[j])
+                {
+                    i++;
+                    j++;
+
+                    if (j == pattern.Length)
+                    {
+                        return i - j; // match found
+                    }
+                }
+                else
+                {
+                    if (j != 0)
+                    {
+                        j = lps[j - 1];
+                    }
+                    else
+                    {
+                        i++;
+                    }
+                }
+            }
+
+            return -1; // not found
+        }
+
+        static int[] BuildLps(string pattern)
+        {
+            int n = pattern.Length;
+            int[] lps = new int[n];
+
+            int len = 0; // length of previous longest prefix suffix
+            int i = 1;
+
+            while (i < n)
+            {
+                if (pattern[i] == pattern[len])
+                {
+                    len++;
+                    lps[i] = len;
+                    i++;
+                }
+                else
+                {
+                    if (len != 0)
+                    {
+                        len = lps[len - 1];
+                    }
+                    else
+                    {
+                        lps[i] = 0;
+                        i++;
+                    }
+                }
+            }
+
+            return lps;
+        }
+
     }
 }
